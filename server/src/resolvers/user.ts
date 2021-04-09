@@ -76,21 +76,14 @@ export class UserResolver {
     try {
       await em.persistAndFlush(user);
     } catch (err) {
-      if (err.code === ALREADY_EXIST) {
-        return {
-          errors: [
-            {
-              field: "username",
-              message: "username has already existed",
-            },
-          ],
-        };
-      }
       return {
         errors: [
           {
-            field: "N/A",
-            message: "an unexpected error occurred",
+            field: err.code === ALREADY_EXIST ? "username" : "N/A",
+            message:
+              err.code === ALREADY_EXIST
+                ? "username has already existed"
+                : "an unexpected error occurred",
           },
         ],
       };
@@ -107,12 +100,21 @@ export class UserResolver {
     @Ctx() { em, req }: ApplicationContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username: options.username });
-    if (!user || !(await argon2.verify(user.password, options.password))) {
+    if (!user) {
       return {
         errors: [
           {
-            field: "username/password",
-            message: "username/password is incorrect",
+            field: "username",
+            message: "username is incorrect",
+          },
+        ],
+      };
+    } else if (!(await argon2.verify(user.password, options.password))) {
+      return {
+        errors: [
+          {
+            field: "password",
+            message: "password is incorrect",
           },
         ],
       };
