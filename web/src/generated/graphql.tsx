@@ -153,6 +153,17 @@ export type RegisterMutation = (
   ) }
 );
 
+export type GetPostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPostsQuery = (
+  { __typename?: 'Query' }
+  & { getPosts: Array<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'title' | 'createdAt' | 'updatedAt'>
+  )> }
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -212,6 +223,20 @@ export const RegisterDocument = gql`
 
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
+};
+export const GetPostsDocument = gql`
+    query GetPosts {
+  getPosts {
+    id
+    title
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+export function useGetPostsQuery(options: Omit<Urql.UseQueryArgs<GetPostsQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<GetPostsQuery>({ query: GetPostsDocument, ...options });
 };
 export const MeDocument = gql`
     query Me {
