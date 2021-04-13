@@ -11,6 +11,7 @@ import {
   ObjectType,
 } from "type-graphql";
 import argon2 from "argon2";
+import { COOKIE_NAME } from "../constants";
 
 const ALREADY_EXIST = "23505";
 
@@ -136,5 +137,19 @@ export class UserResolver {
     @Ctx() { em }: ApplicationContext
   ): Promise<User | null> {
     return em.findOne(User, { id });
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: ApplicationContext): Promise<boolean> {
+    return new Promise((resolve, reject) =>
+      req.session.destroy((err) => {
+        if (err) {
+          reject(false);
+        } else {
+          res.clearCookie(COOKIE_NAME);
+          resolve(true);
+        }
+      })
+    );
   }
 }
