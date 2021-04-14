@@ -10,11 +10,13 @@ import {
   ObjectType,
 } from "type-graphql";
 import argon2 from "argon2";
-import { COOKIE_NAME } from "../constants";
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
 import EmailVaidator from "email-validator";
 import { UsernamePasswordInput } from "./UsernamePasswordInput";
 import { FieldError } from "./FieldError";
 import { validateRegister } from "../utils/validateRegister";
+import { sendEmail } from "../utils/sendEmail";
+import { v4 } from "uuid";
 
 const ALREADY_EXIST = "23505";
 
@@ -137,9 +139,72 @@ export class UserResolver {
   @Mutation(() => Boolean)
   async forgotPassword(
     @Arg("email") email: string,
-    @Ctx() { em }: ApplicationContext
-  ) {
-    // const user = await em.findOne(User,)
+    @Ctx() { em, redis }: ApplicationContext
+  ): Promise<boolean> {
+    const user = await em.findOne(User, { email });
+    if (user) {
+      const token = v4();
+      await redis.set(
+        FORGET_PASSWORD_PREFIX + token,
+        user.id,
+        "ex",
+        1000 * 60 * 60
+      );
+
+      sendEmail(
+        email,
+        "Change password",
+        `<a href="http://localhost:3000/change-password/${token}">Click to reset password</a>`
+      );
+    }
     return true;
+  }
+
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
+    @Ctx() { em, redis }: ApplicationContext
+  ): Promise<UserResponse> {
+    if (newPassword.length < 4) {
+      return {
+        errors: [
+          {
+            field: "newPassword",
+            message: "password length must be greater than 3",
+          },
+        ],
+      };
+    }
+    const key = FORGET_PASSWORD_PREFIX + token;
+    const userId = await redis.get(key);
+    if (!userId) {
+      return {
+        errors: [
+          {
+            field: "token",
+            message: "token expired",
+          },
+        ],
+      };
+    }
+    const user = await em.findOne(User, { id: parseInt(userId) });
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: "token",
+            message: "user does not exists",
+          },
+        ],
+      };
+    }
+
+    user.password = await argon2.hash(newPassword);
+    await em.persistAndFlush(user);
+
+    await redis.del(key);
+
+    return { user };
   }
 }
