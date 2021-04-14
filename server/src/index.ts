@@ -11,6 +11,7 @@ import connectRedis from "connect-redis";
 import { COOKIE_NAME, __prod__ } from "./constants";
 import { ApplicationContext } from "./types";
 import cors from "cors";
+import { sendEmail } from "./utils/sendEmail";
 
 const main = async () => {
   const orm = await MikroORM.init(mikroConfiguration);
