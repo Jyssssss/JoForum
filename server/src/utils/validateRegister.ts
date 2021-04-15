@@ -12,7 +12,7 @@ export const validateRegister = (
       message: "username length must be greater than 2",
     });
   }
-  if (options.username.includes("@")) {
+  if (["@", "(", ")"].some((v) => options.username.includes(v))) {
     errors.push({
       field: "username",
       message: "username cannot include @",
