@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -37,6 +38,7 @@ export class Post extends BaseEntity {
   creator: User;
 
   @Field(() => String)
+  @Index()
   @CreateDateColumn()
   createdAt: Date;
 

@@ -96,6 +96,12 @@ export type Query = {
 };
 
 
+export type QueryGetPostsArgs = {
+  cursor?: Maybe<Scalars['String']>;
+  limit: Scalars['Int'];
+};
+
+
 export type QueryGetPostArgs = {
   id: Scalars['Float'];
 };
@@ -219,7 +225,10 @@ export type RegisterMutation = (
   ) }
 );
 
-export type GetPostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetPostsQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  cursor?: Maybe<Scalars['String']>;
+}>;
 
 
 export type GetPostsQuery = (
@@ -333,8 +342,8 @@ export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
 };
 export const GetPostsDocument = gql`
-    query GetPosts {
-  getPosts {
+    query GetPosts($limit: Int!, $cursor: String) {
+  getPosts(limit: $limit, cursor: $cursor) {
     id
     title
     createdAt
