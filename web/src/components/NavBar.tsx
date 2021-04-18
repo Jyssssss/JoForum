@@ -21,23 +21,12 @@ export const NavBar: React.FC<NavBarProps> = ({ empty }) => {
           {fetching ? null : !data?.me ? (
             <>
               <NextLink href="/login">
-                <Button
-                  bg="lightseagreen"
-                  color="white"
-                  mr={4}
-                  _hover={{ background: "darkcyan" }}
-                >
+                <Button variant="regular" mr={4}>
                   Login
                 </Button>
               </NextLink>
               <NextLink href="/register">
-                <Button
-                  bg="lightseagreen"
-                  color="white"
-                  _hover={{ background: "darkcyan" }}
-                >
-                  Register
-                </Button>
+                <Button variant="regular">Register</Button>
               </NextLink>
             </>
           ) : (
@@ -46,9 +35,7 @@ export const NavBar: React.FC<NavBarProps> = ({ empty }) => {
                 {data.me.username}
               </Box>
               <Button
-                bg="lightseagreen"
-                color="white"
-                _hover={{ background: "darkcyan" }}
+                variant="regular"
                 onClick={() => {
                   logout();
                 }}

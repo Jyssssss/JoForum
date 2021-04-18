@@ -124,12 +124,12 @@ export class UserResolver {
   }
 
   @Query(() => [User])
-  async getUsers(): Promise<User[]> {
+  async users(): Promise<User[]> {
     return User.find();
   }
 
   @Query(() => User, { nullable: true })
-  async getUser(@Arg("id") id: number): Promise<User | undefined> {
+  async user(@Arg("id") id: number): Promise<User | undefined> {
     return await User.findOne(id);
   }
 

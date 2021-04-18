@@ -1,8 +1,0 @@
-query GetPosts($limit: Int!, $cursor: String) {
-  getPosts(limit: $limit, cursor: $cursor) {
-    id
-    title
-    createdAt
-    updatedAt
-  }
-}

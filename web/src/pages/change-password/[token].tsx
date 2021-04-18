@@ -57,10 +57,10 @@ const ChangePassword: NextPage = () => {
               </Flex>
             ) : null}
             <Button
+              variant="regular"
               mt={4}
               type="submit"
               isLoading={isSubmitting}
-              colorScheme="teal"
             >
               Change password
             </Button>

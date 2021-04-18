@@ -3,7 +3,6 @@ import { Formik, Form } from "formik";
 import { withUrqlClient } from "next-urql";
 import { useRouter } from "next/router";
 import React from "react";
-import { useEffect } from "react";
 import { InputField } from "../components/InputField";
 import { Layout } from "../components/Layout";
 import { useCreatePostMutation } from "../generated/graphql";
@@ -33,10 +32,10 @@ const CreatePost: React.FC<{}> = () => {
               <InputField name="text" label="Body" textarea />
             </Box>
             <Button
+              variant="regular"
               mt={4}
               type="submit"
               isLoading={isSubmitting}
-              colorScheme="teal"
             >
               Post
             </Button>

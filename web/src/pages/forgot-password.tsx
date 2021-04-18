@@ -29,10 +29,10 @@ export const ForgotPassword: React.FC<{}> = ({}) => {
                 type="email"
               />
               <Button
+                variant="regular"
                 mt={4}
                 type="submit"
                 isLoading={isSubmitting}
-                colorScheme="teal"
               >
                 Confirm
               </Button>

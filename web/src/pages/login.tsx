@@ -52,10 +52,10 @@ const Login: React.FC<loginProps> = () => {
               </NextLink>
             </Flex>
             <Button
+              variant="regular"
               mt={4}
               type="submit"
               isLoading={isSubmitting}
-              colorScheme="teal"
             >
               Login
             </Button>
