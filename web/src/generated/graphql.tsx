@@ -51,7 +51,7 @@ export type MutationDeletePostArgs = {
 
 
 export type MutationVoteArgs = {
-  value: Scalars['Boolean'];
+  value?: Maybe<Scalars['Boolean']>;
   postId: Scalars['Int'];
 };
 
@@ -89,6 +89,7 @@ export type Post = {
   title: Scalars['String'];
   text: Scalars['String'];
   points: Scalars['Float'];
+  voteStatus?: Maybe<Scalars['Boolean']>;
   creatorId: Scalars['Float'];
   creator: User;
   createdAt: Scalars['String'];
@@ -154,7 +155,7 @@ export type BasicUserFragment = (
 
 export type PostSnippetFragment = (
   { __typename?: 'Post' }
-  & Pick<Post, 'id' | 'title' | 'textSnippet' | 'points' | 'createdAt' | 'updatedAt'>
+  & Pick<Post, 'id' | 'title' | 'textSnippet' | 'points' | 'createdAt' | 'updatedAt' | 'voteStatus'>
   & { creator: (
     { __typename?: 'User' }
     & Pick<User, 'id' | 'username'>
@@ -251,7 +252,7 @@ export type RegisterMutation = (
 
 export type VoteMutationVariables = Exact<{
   postId: Scalars['Int'];
-  value: Scalars['Boolean'];
+  value?: Maybe<Scalars['Boolean']>;
 }>;
 
 
@@ -297,6 +298,7 @@ export const PostSnippetFragmentDoc = gql`
   points
   createdAt
   updatedAt
+  voteStatus
   creator {
     id
     username
@@ -395,7 +397,7 @@ export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
 };
 export const VoteDocument = gql`
-    mutation Vote($postId: Int!, $value: Boolean!) {
+    mutation Vote($postId: Int!, $value: Boolean) {
   vote(value: $value, postId: $postId)
 }
     `;

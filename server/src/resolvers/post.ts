@@ -46,13 +46,14 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
+    @Ctx() { req }: ApplicationContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
     const params: any[] = cursor
-      ? [realLimitPlusOne, new Date(parseInt(cursor))]
-      : [realLimitPlusOne];
+      ? [realLimitPlusOne, req.session.userId, new Date(parseInt(cursor))]
+      : [realLimitPlusOne, req.session.userId];
 
     const posts = await getConnection().query(
       `
@@ -63,10 +64,16 @@ export class PostResolver {
       'email', u.email,
       'createdAt', u."createdAt",
       'updatedAt', u."updatedAt"
-    ) creator
+      ) creator, (
+    ${
+      req.session.userId
+        ? 'SELECT value FROM Upvote WHERE "userId" = $2 and "postId" = p.id'
+        : "null"
+    } 
+      ) "voteStatus"
     FROM Post p
     INNER JOIN PUBLIC.User u ON u.id = p."creatorId"
-    ${cursor ? `where p."createdAt" < $2` : ""}
+    ${cursor ? `where p."createdAt" < $3` : ""}
     ORDER BY p."createdAt" DESC
     limit $1
     `,
@@ -121,7 +128,7 @@ export class PostResolver {
   @UseMiddleware(isAuth)
   async vote(
     @Arg("postId", () => Int) postId: number,
-    @Arg("value", () => Boolean) value: boolean,
+    @Arg("value", () => Boolean, { nullable: true }) value: boolean | null,
     @Ctx() { req }: ApplicationContext
   ): Promise<boolean> {
     const { userId } = req.session;
@@ -130,14 +137,24 @@ export class PostResolver {
 
     if (upvote && upvote.value !== value) {
       await getConnection().transaction(async (tm) => {
-        await tm.query(
-          `
-        UPDATE Upvote
-        SET value = $1
-        WHERE "postId" = $2 AND "userId" = $3
-        `,
-          [value, postId, userId]
-        );
+        if (value !== null) {
+          await tm.query(
+            `
+          UPDATE Upvote
+          SET value = $1
+          WHERE "postId" = $2 AND "userId" = $3
+          `,
+            [value, postId, userId]
+          );
+        } else {
+          await tm.query(
+            `
+          DELETE FROM Upvote
+          WHERE "postId" = $1 AND "userId" = $2
+          `,
+            [postId, userId]
+          );
+        }
 
         await tm.query(
           `
@@ -145,10 +162,10 @@ export class PostResolver {
         SET points = points + $1
         WHERE id = $2
         `,
-          [value ? 2 : -2, postId]
+          [value === null ? (upvote.value ? -1 : 1) : value ? 2 : -2, postId]
         );
       });
-    } else if (!upvote) {
+    } else if (!upvote && value !== null) {
       await getConnection().transaction(async (tm) => {
         await tm.query(
           `
