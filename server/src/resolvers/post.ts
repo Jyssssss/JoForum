@@ -16,6 +16,7 @@ import {
 import { ApplicationContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { getConnection } from "typeorm";
+import { Upvote } from "../entities/Upvote";
 
 @InputType()
 class PostInput {
@@ -47,22 +48,30 @@ export class PostResolver {
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
-    const queryBuilder = getConnection()
-      .getRepository(Post)
-      .createQueryBuilder("post");
-
-    if (cursor) {
-      queryBuilder.where('"createdAt" < :cursor', {
-        cursor: new Date(parseInt(cursor)),
-      });
-    }
-
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-    const posts = await queryBuilder
-      .orderBy('"createdAt"', "DESC")
-      .take(realLimitPlusOne)
-      .getMany();
+    const params: any[] = cursor
+      ? [realLimitPlusOne, new Date(parseInt(cursor))]
+      : [realLimitPlusOne];
+
+    const posts = await getConnection().query(
+      `
+    SELECT p.*,
+    JSON_BUILD_OBJECT(
+      'id', u.id,
+      'username', u.username,
+      'email', u.email,
+      'createdAt', u."createdAt",
+      'updatedAt', u."updatedAt"
+    ) creator
+    FROM Post p
+    INNER JOIN PUBLIC.User u ON u.id = p."creatorId"
+    ${cursor ? `where p."createdAt" < $2` : ""}
+    ORDER BY p."createdAt" DESC
+    limit $1
+    `,
+      params
+    );
 
     return {
       posts: posts.slice(0, realLimit),
@@ -105,6 +114,61 @@ export class PostResolver {
     } catch {
       return false;
     }
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("postId", () => Int) postId: number,
+    @Arg("value", () => Boolean) value: boolean,
+    @Ctx() { req }: ApplicationContext
+  ): Promise<boolean> {
+    const { userId } = req.session;
+
+    const upvote = await Upvote.findOne({ where: { postId, userId } });
+
+    if (upvote && upvote.value !== value) {
+      await getConnection().transaction(async (tm) => {
+        await tm.query(
+          `
+        UPDATE Upvote
+        SET value = $1
+        WHERE "postId" = $2 AND "userId" = $3
+        `,
+          [value, postId, userId]
+        );
+
+        await tm.query(
+          `
+        UPDATE Post
+        SET points = points + $1
+        WHERE id = $2
+        `,
+          [value ? 2 : -2, postId]
+        );
+      });
+    } else if (!upvote) {
+      await getConnection().transaction(async (tm) => {
+        await tm.query(
+          `
+          INSERT INTO Upvote ("userId", "postId", value)
+          values ($1, $2, $3)
+          `,
+          [userId, postId, value]
+        );
+
+        await tm.query(
+          `
+        UPDATE Post
+        SET points = points + $1
+        WHERE id = $2
+        `,
+          [value ? 1 : -1, postId]
+        );
+      });
+    }
+
     return true;
   }
 }

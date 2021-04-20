@@ -10,10 +10,12 @@ import {
   MeDocument,
   RegisterMutation,
   LogoutMutation,
+  VoteMutationVariables,
 } from "../generated/graphql";
 import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import { appUpdateQuery } from "./appUpdateQuery";
 import Router from "next/router";
+import { gql } from "@urql/core";
 
 export const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
@@ -34,8 +36,6 @@ export const cursorPagination = (): Resolver => {
       cache.resolve(entityKey, fieldKey) as string,
       "posts"
     );
-
-    // info.partial = !cache.resolve(entityKey, fieldKey);
 
     const posts: string[] = [];
     let hasMore = true;
@@ -106,6 +106,38 @@ export const createUrqlClient = (ssrExchange: any) => ({
               _result,
               () => ({ me: null })
             );
+          },
+          createPost: (_result, args, cache, info) => {
+            const allFields = cache.inspectFields("Query");
+            const fieldInfos = allFields.filter(
+              (_info) => _info.fieldName === "posts"
+            );
+            fieldInfos.forEach((fi) => {
+              cache.invalidate("Query", "posts", fi.arguments || {});
+            });
+          },
+          vote: (_result, args, cache, info) => {
+            const { postId, value } = args as VoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post {
+                  id
+                  points
+                }
+              `,
+              { id: postId }
+            );
+            if (data) {
+              const newPoints = (data.points as number) + (value ? 1 : -1);
+              cache.writeFragment(
+                gql`
+                  fragment _ on Post {
+                    points
+                  }
+                `,
+                { id: postId, points: newPoints }
+              );
+            }
           },
         },
       },
