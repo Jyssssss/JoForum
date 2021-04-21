@@ -113,7 +113,7 @@ export class PostResolver {
 
   @Mutation(() => Post, { nullable: true })
   async updatePost(
-    @Arg("id") id: number,
+    @Arg("id", () => Int) id: number,
     @Arg("title") title: string
   ): Promise<Post | null> {
     const post = await Post.findOne(id);
@@ -123,9 +123,13 @@ export class PostResolver {
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg("id") id: number): Promise<boolean> {
+  @UseMiddleware(isAuth)
+  async deletePost(
+    @Arg("id", () => Int) id: number,
+    @Ctx() { req }: ApplicationContext
+  ): Promise<boolean> {
     try {
-      await Post.delete(id);
+      await Post.delete({ id, creatorId: req.session.userId });
     } catch {
       return false;
     }

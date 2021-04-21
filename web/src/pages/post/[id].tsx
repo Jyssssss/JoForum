@@ -7,7 +7,7 @@ import { Layout } from "../../components/Layout";
 import { usePostQuery } from "../../generated/graphql";
 import { createUrqlClient } from "../../utils/createUrqlClient";
 
-const Post = ({}) => {
+const Post = () => {
   const router = useRouter();
   const [{ data, fetching }] = usePostQuery({
     variables: {
