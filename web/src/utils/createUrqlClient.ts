@@ -16,6 +16,8 @@ import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import { appUpdateQuery } from "./appUpdateQuery";
 import Router from "next/router";
 import { gql } from "@urql/core";
+import { NoUndefinedVariablesRule } from "graphql";
+import { isServer } from "./isServer";
 
 export const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
@@ -55,9 +57,10 @@ export const cursorPagination = (): Resolver => {
   };
 };
 
-export const createUrqlClient = (ssrExchange: any) => ({
+export const createUrqlClient = (ssrExchange: any, ctx: any) => ({
   url: "http://localhost:4000/graphql",
   fetchOptions: {
+    headers: isServer() ? { cookie: ctx.req.headers.cookie } : undefined,
     credentials: "include" as const,
   },
   exchanges: [

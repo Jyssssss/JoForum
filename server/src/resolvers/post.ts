@@ -51,9 +51,17 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-    const params: any[] = cursor
-      ? [realLimitPlusOne, req.session.userId, new Date(parseInt(cursor))]
-      : [realLimitPlusOne, req.session.userId];
+    const params: any[] = [realLimitPlusOne];
+
+    if (req.session.userId) {
+      params.push(req.session.userId);
+    }
+
+    let cursorIdx = 2;
+    if (cursor) {
+      params.push(new Date(parseInt(cursor)));
+      cursorIdx = params.length;
+    }
 
     const posts = await getConnection().query(
       `
@@ -73,7 +81,7 @@ export class PostResolver {
       ) "voteStatus"
     FROM Post p
     INNER JOIN PUBLIC.User u ON u.id = p."creatorId"
-    ${cursor ? `where p."createdAt" < $3` : ""}
+    ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}
     ORDER BY p."createdAt" DESC
     limit $1
     `,

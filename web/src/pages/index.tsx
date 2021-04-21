@@ -1,6 +1,6 @@
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { usePostsQuery, useVoteMutation } from "../generated/graphql";
+import { usePostsQuery } from "../generated/graphql";
 import { Layout } from "../components/Layout";
 import React, { useState } from "react";
 import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
@@ -15,7 +15,6 @@ const Index = () => {
   const [{ data, fetching }] = usePostsQuery({
     variables,
   });
-  const [, vote] = useVoteMutation();
 
   return (
     <Layout>
