@@ -3,7 +3,15 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { usePostsQuery } from "../generated/graphql";
 import { Layout } from "../components/Layout";
 import React, { useState } from "react";
-import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Link,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import NextLink from "next/link";
 import { UpvoteSection } from "../components/UpvoteSection";
 
@@ -18,15 +26,6 @@ const Index = () => {
 
   return (
     <Layout>
-      <Flex>
-        <Heading>JoForum</Heading>
-        <NextLink href="/create-post">
-          <Button variant="regular" mb={4} ml="auto">
-            Create Post
-          </Button>
-        </NextLink>
-      </Flex>
-      <br></br>
       {!data && fetching ? (
         <div>Loading...</div>
       ) : !fetching && !data ? (
@@ -45,7 +44,11 @@ const Index = () => {
               <Flex>
                 <UpvoteSection post={p}></UpvoteSection>
                 <Box>
-                  <Heading fontSize="xl">{p.title}</Heading>
+                  <NextLink href="/post/[id]" as={`/post/${p.id}`}>
+                    <Link>
+                      <Heading fontSize="xl">{p.title}</Heading>
+                    </Link>
+                  </NextLink>
                   <Text>posted by {p.creator.username}</Text>
                   <Text mt={4}>{p.textSnippet}</Text>
                 </Box>

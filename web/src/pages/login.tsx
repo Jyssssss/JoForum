@@ -51,14 +51,16 @@ const Login: React.FC<loginProps> = () => {
                 </Link>
               </NextLink>
             </Flex>
-            <Button
-              variant="regular"
-              mt={4}
-              type="submit"
-              isLoading={isSubmitting}
-            >
-              Login
-            </Button>
+            <Flex justifyContent="center">
+              <Button
+                variant="regular"
+                mt={4}
+                type="submit"
+                isLoading={isSubmitting}
+              >
+                Login
+              </Button>
+            </Flex>
           </Form>
         )}
       </Formik>

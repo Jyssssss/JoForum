@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Link } from "@chakra-ui/react";
 import React from "react";
 import NextLink from "next/link";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
@@ -12,38 +12,61 @@ export const NavBar: React.FC<NavBarProps> = ({ empty }) => {
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
 
   return (
-    <Flex position="sticky" top={0} zIndex={1} bg="darkturquoise" p={4}>
-      {empty ? null : (
-        <Box ml={"auto"}>
-          {fetching ? null : !data?.me ? (
-            <>
-              <NextLink href="/login">
-                <Button variant="regular" mr={4}>
-                  Login
-                </Button>
-              </NextLink>
-              <NextLink href="/register">
-                <Button variant="regular">Register</Button>
-              </NextLink>
-            </>
-          ) : (
-            <Flex>
-              <Box mr={8} mt={2} fontFamily={"mono"}>
-                {data.me.username}
+    <Flex
+      position="sticky"
+      top={0}
+      zIndex={1}
+      bg="darkturquoise"
+      p={4}
+      align="center"
+    >
+      <Flex flex={1} m="auto" maxW={800}>
+        <NextLink href="/">
+          <Link>
+            <Heading>JoForum</Heading>
+          </Link>
+        </NextLink>
+        {empty ? null : (
+          <>
+            {fetching ? null : !data?.me ? (
+              <Box ml={"auto"}>
+                <NextLink href="/login">
+                  <Button variant="regular" mr={4}>
+                    Login
+                  </Button>
+                </NextLink>
+                <NextLink href="/register">
+                  <Button variant="regular">Register</Button>
+                </NextLink>
               </Box>
-              <Button
-                variant="regular"
-                onClick={() => {
-                  logout();
-                }}
-                isLoading={logoutFetching}
-              >
-                Logout
-              </Button>
-            </Flex>
-          )}
-        </Box>
-      )}
+            ) : (
+              <>
+                <Box ml="8">
+                  <NextLink href="/create-post">
+                    <Button variant="regular">Create Post</Button>
+                  </NextLink>
+                </Box>
+                <Box ml={"auto"}>
+                  <Flex>
+                    <Box mr={8} mt={2} fontFamily={"mono"}>
+                      {data.me.username}
+                    </Box>
+                    <Button
+                      variant="regular"
+                      onClick={() => {
+                        logout();
+                      }}
+                      isLoading={logoutFetching}
+                    >
+                      Logout
+                    </Button>
+                  </Flex>
+                </Box>
+              </>
+            )}
+          </>
+        )}
+      </Flex>
     </Flex>
   );
 };
