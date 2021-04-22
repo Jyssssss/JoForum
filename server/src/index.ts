@@ -15,6 +15,8 @@ import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 import path from "path";
 import { Upvote } from "./entities/Upvote";
+import { createUserLoader } from "./utils/createUserLoader";
+import { createUpvoteLoader } from "./utils/createUpvoteLoader";
 
 const main = async () => {
   const conn = await createConnection({
@@ -67,6 +69,8 @@ const main = async () => {
       req,
       res,
       redis,
+      userLoader: createUserLoader(),
+      upvoteLoader: createUpvoteLoader(),
     }),
   });
 

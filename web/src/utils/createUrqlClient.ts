@@ -111,7 +111,6 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => ({
               _result,
               () => ({ me: null })
             );
-            appInvalidatePosts(cache);
           },
           createPost: (_result, args, cache, info) => {
             appInvalidatePosts(cache);
