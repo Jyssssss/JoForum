@@ -1,10 +1,6 @@
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import {
-  useDeletePostMutation,
-  useMeQuery,
-  usePostsQuery,
-} from "../generated/graphql";
+import { useMeQuery, usePostsQuery } from "../generated/graphql";
 import { Layout } from "../components/Layout";
 import React, { useState } from "react";
 import {
@@ -12,16 +8,13 @@ import {
   Button,
   Flex,
   Heading,
-  IconButton,
   Link,
   Stack,
   Text,
-  useDisclosure,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { UpvoteSection } from "../components/UpvoteSection";
-import { DeleteIcon } from "@chakra-ui/icons";
-import { ConfirmModal } from "../components/ConfirmModal";
+import { PostButtonSection } from "../components/PostButtonSection";
 
 const Index = () => {
   const [variables, setvariables] = useState({
@@ -32,20 +25,13 @@ const Index = () => {
     variables,
   });
   const [{ data: meData }] = useMeQuery();
-  const [, deletePost] = useDeletePostMutation();
-  const {
-    isOpen: isDeleteModalOpen,
-    onOpen: onDeleteModalOpen,
-    onClose: onDeleteModalClose,
-  } = useDisclosure();
-  const [deletedPostId, setDeletedPostId] = useState(-1);
 
   return (
     <Layout>
       {!postData && postFetching ? (
-        <div>Loading...</div>
+        <Box>Loading...</Box>
       ) : !postFetching && !postData ? (
-        <div>No posts</div>
+        <Box>No posts</Box>
       ) : (
         <Stack spacing={8}>
           {postData?.posts.posts.map((p) =>
@@ -71,15 +57,7 @@ const Index = () => {
                   </Box>
                   {meData?.me?.id === p.creator.id ? (
                     <Box ml="auto">
-                      <IconButton
-                        aria-label="Delete"
-                        colorScheme="blackAlpha"
-                        icon={<DeleteIcon></DeleteIcon>}
-                        onClick={() => {
-                          setDeletedPostId(p.id);
-                          onDeleteModalOpen();
-                        }}
-                      ></IconButton>
+                      <PostButtonSection id={p.id} />
                     </Box>
                   ) : null}
                 </Flex>
@@ -108,15 +86,6 @@ const Index = () => {
           </Button>
         </Flex>
       ) : null}
-      <ConfirmModal
-        message="Click Confirm to delete the post"
-        onConfirm={async () => {
-          await deletePost({ id: deletedPostId });
-          onDeleteModalClose();
-        }}
-        isOpen={isDeleteModalOpen}
-        onClose={onDeleteModalClose}
-      ></ConfirmModal>
     </Layout>
   );
 };

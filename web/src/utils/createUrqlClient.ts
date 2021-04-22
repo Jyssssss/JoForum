@@ -17,8 +17,8 @@ import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import { appUpdateQuery } from "./appUpdateQuery";
 import Router from "next/router";
 import { gql } from "@urql/core";
-import { NoUndefinedVariablesRule } from "graphql";
 import { isServer } from "./isServer";
+import { appInvalidatePosts } from "./appInvalidatePosts";
 
 export const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
@@ -61,7 +61,7 @@ export const cursorPagination = (): Resolver => {
 export const createUrqlClient = (ssrExchange: any, ctx: any) => ({
   url: "http://localhost:4000/graphql",
   fetchOptions: {
-    headers: isServer() ? { cookie: ctx.req.headers.cookie } : undefined,
+    headers: isServer() ? { cookie: ctx?.req?.headers?.cookie } : undefined,
     credentials: "include" as const,
   },
   exchanges: [
@@ -89,6 +89,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => ({
                       me: result.login.user,
                     }
             );
+            appInvalidatePosts(cache);
           },
           register: (_result, args, cache, info) => {
             appUpdateQuery<RegisterMutation, MeQuery>(
@@ -110,15 +111,10 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => ({
               _result,
               () => ({ me: null })
             );
+            appInvalidatePosts(cache);
           },
           createPost: (_result, args, cache, info) => {
-            const allFields = cache.inspectFields("Query");
-            const fieldInfos = allFields.filter(
-              (_info) => _info.fieldName === "posts"
-            );
-            fieldInfos.forEach((fi) => {
-              cache.invalidate("Query", "posts", fi.arguments || {});
-            });
+            appInvalidatePosts(cache);
           },
           vote: (_result, args, cache, info) => {
             const { postId, value } = args as VoteMutationVariables;
