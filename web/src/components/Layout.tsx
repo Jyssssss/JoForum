@@ -11,6 +11,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, variant, empty }) => {
   return (
     <>
+      <title>JoForum</title>
       <NavBar empty={empty} />
       <Wrapper variant={variant}>{children}</Wrapper>
     </>

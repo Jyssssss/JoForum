@@ -172,7 +172,7 @@ export class UserResolver {
       sendEmail(
         email,
         "Change password",
-        `<a href="http://localhost:3000/change-password/${token}">Click to reset password</a>`
+        `<a href="${process.env.CORS_ORIGIN}/change-password/${token}">Click to reset password</a>`
       );
     }
     return true;
