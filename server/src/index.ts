@@ -37,6 +37,7 @@ const main = async () => {
   const redis = new Redis(process.env.REDIS_URL);
 
   app.set("trust proxy", 1);
+  // app.enable("trust proxy");
 
   app.use(
     cors({
@@ -53,11 +54,12 @@ const main = async () => {
         disableTouch: true,
       }),
       cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+        maxAge: 1000 * 60 * 60 * 24 * 365,
         httpOnly: true,
         secure: __prod__,
-        sameSite: "lax",
-        domain: __prod__ ? process.env.DOMAIN : undefined,
+        // Work around for production environment just now
+        sameSite: __prod__ ? "none" : "lax",
+        // domain: __prod__ ? process.env.DOMAIN : undefined,
       },
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET,
