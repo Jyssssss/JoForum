@@ -94,7 +94,7 @@ export class PostResolver {
 
   @Query(() => Post, { nullable: true })
   async post(@Arg("id", () => Int) id: number): Promise<Post | undefined> {
-    return await Post.findOne(id);
+    return Post.findOne(id);
   }
 
   @Mutation(() => Post)
@@ -103,7 +103,7 @@ export class PostResolver {
     @Arg("input") input: PostInput,
     @Ctx() { req }: ApplicationContext
   ): Promise<Post> {
-    return await Post.create({
+    return Post.create({
       ...input,
       creatorId: req.session.userId,
     }).save();
@@ -117,7 +117,7 @@ export class PostResolver {
     @Arg("text", () => String, { nullable: true }) text: string,
     @Ctx() { req }: ApplicationContext
   ): Promise<Post | null> {
-    return await getConnection()
+    return getConnection()
       .createQueryBuilder()
       .update(Post)
       .set({ title, text })

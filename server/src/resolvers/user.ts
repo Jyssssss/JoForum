@@ -43,7 +43,7 @@ export class UserResolver {
     @Ctx() { req }: ApplicationContext
   ): Promise<User | undefined | null> {
     if (!req.session.userId) return null;
-    return await User.findOne(req.session.userId);
+    return User.findOne(req.session.userId);
   }
 
   @Mutation(() => UserResponse)
@@ -137,7 +137,7 @@ export class UserResolver {
 
   @Query(() => User, { nullable: true })
   async user(@Arg("id") id: number): Promise<User | undefined> {
-    return await User.findOne(id);
+    return User.findOne(id);
   }
 
   @Mutation(() => Boolean)
